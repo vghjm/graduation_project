@@ -2,6 +2,7 @@ package com.example.graduateproject;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Matrix;
 import android.graphics.Rect;
 import android.graphics.SurfaceTexture;
 import android.graphics.YuvImage;
@@ -78,10 +79,37 @@ public class FaceScanner implements Camera.PreviewCallback {
         return true;
     }
 
+    /* 화면 회전했을 때 영상 처리용 Bitmap image를 회전시켜 줌 */
+    public static Bitmap setBitMapImage(Bitmap bitmap, int i) {
+        //Log.e("CameraService", "setBitMapImage");
+        if (i >= 45 && i < 135) {
+            bitmap = RotateBitmap(bitmap, -180);
+            Log.e(TAG, "1");
+        } else if (i >= 135 && i < 225) {
+            bitmap = RotateBitmap(bitmap, -90);
+            Log.e(TAG, "2");
+        } else if (i >= 225 && i < 315) {
+            //do nothing
+            Log.e(TAG, "3");
+        } else {
+            // 정화면
+            bitmap = RotateBitmap(bitmap, 90);
+            Log.e(TAG, "4");
+        }
+        return bitmap;
+    }
+
+    /* 화면을 회전시켜 주는 메소드 */
+    public static Bitmap RotateBitmap(Bitmap source, float angle) {
+        Matrix matrix = new Matrix();
+        matrix.postRotate(angle);
+        return Bitmap.createBitmap(source, 0, 0, source.getWidth(), source.getHeight(), matrix, true);
+    }
+
     @Override
     public void onPreviewFrame(byte[] data, Camera camera) {
         // 1초에 1프레임
-        if (count != 15) {
+        if (count != 45) {
             count++;
         } else {
             if (data == null) {
@@ -100,7 +128,10 @@ public class FaceScanner implements Camera.PreviewCallback {
 
             byte[] bytes = out.toByteArray();
             Bitmap bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
-            bitmap = Bitmap.createScaledBitmap(bitmap, 400, 300, false);
+            bitmap = Bitmap.createScaledBitmap(bitmap, 640, 480, false);
+
+            //Log.e("orientation: ", ""+CameraService.ori);
+            bitmap = setBitMapImage(bitmap, CameraService.ori);
 
             String date = new SimpleDateFormat("yyyy_MM_dd_hh_mm_ss").format(new Date());
             String filepath = Environment.getExternalStorageDirectory().getAbsolutePath() + "/Gproject";
@@ -119,6 +150,12 @@ public class FaceScanner implements Camera.PreviewCallback {
             mCamera.release();
             mCamera = null;
             Log.d(TAG, "releaseCamera -- done");
+        }
+    }
+
+    public void endScanning() {
+        if (mCamera != null) {
+            stopcamera();
         }
     }
 

@@ -11,18 +11,26 @@ import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
+import android.widget.TextView;
 import android.widget.Toast;
 
 public class MainActivity extends AppCompatActivity {
 
     //Context context = getApplicationContext();
     Button startbutton;
+    TextView output;
     public static boolean servicecheck = false;
+    public static Context mContext;
+
+    public void setText(String text) {
+        output.setText(text);
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        mContext = this;
 
         // 권한 설정
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
@@ -35,6 +43,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         startbutton = (Button) findViewById(R.id.button);
+        output = (TextView) findViewById(R.id.textView);
         startbutton.setOnClickListener(new Button.OnClickListener(){
             @Override
             public void onClick(View view){
@@ -42,11 +51,11 @@ public class MainActivity extends AppCompatActivity {
                 if(!servicecheck)
                 {
                     servicecheck = true;
-                    Toast.makeText(getApplicationContext(), "SERVICE START", Toast.LENGTH_SHORT);
+                    startbutton.setText("SERVICE END");
                     startService(tmpIntent);
                 }else{
                     servicecheck = false;
-                    Toast.makeText(getApplicationContext(), "SERVICE END", Toast.LENGTH_SHORT);
+                    startbutton.setText("SERVICE START");
                     stopService(tmpIntent);
                 }
 
@@ -54,6 +63,5 @@ public class MainActivity extends AppCompatActivity {
         });
 
     }
-
 }
 
