@@ -7,7 +7,6 @@ import android.util.Log;
 import android.widget.Toast;
 
 public class CameraService extends Service {
-
     FaceScanner faceScanner = new FaceScanner();
 
     @Override

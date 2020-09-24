@@ -15,7 +15,7 @@ import android.widget.Toast;
 
 public class MainActivity extends AppCompatActivity {
 
-    Context context = getApplicationContext();
+    //Context context = getApplicationContext();
     Button startbutton;
     public static boolean servicecheck = false;
 
@@ -28,8 +28,10 @@ public class MainActivity extends AppCompatActivity {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
                 != PackageManager.PERMISSION_GRANTED
                 || ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                != PackageManager.PERMISSION_GRANTED
+                || ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE)
                 != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE}, 200);
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE,Manifest.permission.READ_EXTERNAL_STORAGE}, 200);
         }
 
         startbutton = (Button) findViewById(R.id.button);
@@ -40,12 +42,11 @@ public class MainActivity extends AppCompatActivity {
                 if(!servicecheck)
                 {
                     servicecheck = true;
-                    Toast.makeText(context, "SERVICE START", Toast.LENGTH_SHORT);
+                    Toast.makeText(getApplicationContext(), "SERVICE START", Toast.LENGTH_SHORT);
                     startService(tmpIntent);
                 }else{
                     servicecheck = false;
-                    Toast.makeText(context, "SERVICE END" +
-                            "", Toast.LENGTH_SHORT);
+                    Toast.makeText(getApplicationContext(), "SERVICE END", Toast.LENGTH_SHORT);
                     stopService(tmpIntent);
                 }
 
