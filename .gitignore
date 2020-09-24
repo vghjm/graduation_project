@@ -1,2 +1,5 @@
 #no modules
 server/node_modules
+
+#no image files
+server/image
