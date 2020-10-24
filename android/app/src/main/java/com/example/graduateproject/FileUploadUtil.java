@@ -1,12 +1,15 @@
 package com.example.graduateproject;
 
+import android.os.Build;
+import android.os.Handler;
+import android.os.Message;
+import android.speech.tts.TextToSpeech;
 import android.util.Log;
-
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.ref.PhantomReference;
+import java.util.Locale;
 
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -18,10 +21,19 @@ import okhttp3.RequestBody;
 import okhttp3.Response;
 
 public class FileUploadUtil {
-    private static String URL = "http://b2e9dc8f37fd.ngrok.io/upload";
+    private static String URL = "http://2dc3b1a9a387.ngrok.io/upload";
+    private static Handler mHandler;
 
-    public static void send2Server(final File file) {
+    //handle message to detectionservice
+    public static void handleMessage(String sending_str) {
+        Message msg = Message.obtain();
+        msg.obj = (Object)sending_str;
+        mHandler.sendMessage(msg);
+    }
+
+    public static void send2Server(Handler handler ,final File file) {
         Log.e("11", file.getName());
+        mHandler = handler;
         RequestBody requestBody = new MultipartBody.Builder()
                 .setType(MultipartBody.FORM)
                 .addFormDataPart("pngfile", file.getName(), RequestBody.create(MediaType.parse("image/png"), file))
@@ -40,14 +52,11 @@ public class FileUploadUtil {
 
             @Override
             public void onResponse(Call call, Response response) throws IOException {
-                //Log.d("TEST : ", response.body().string());
                 try {
-                    //JSONObject jsonObject = new JSONObject(response.body().string());
                     String str = response.body().string();
+                    handleMessage(str);
                     ((MainActivity) MainActivity.mContext).setText(str);
-//                }catch(JSONException e){
-//                    e.printStackTrace();
-                }catch(IOException e){
+                } catch (IOException e) {
                     e.printStackTrace();
                 }
                 file.delete();

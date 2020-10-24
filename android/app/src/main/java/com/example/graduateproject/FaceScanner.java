@@ -1,5 +1,7 @@
 package com.example.graduateproject;
 
+import android.annotation.SuppressLint;
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
@@ -7,8 +9,18 @@ import android.graphics.Rect;
 import android.graphics.SurfaceTexture;
 import android.graphics.YuvImage;
 import android.hardware.Camera;
+import android.os.Build;
 import android.os.Environment;
+import android.os.Handler;
+import android.os.Message;
+import android.speech.tts.TextToSpeech;
 import android.util.Log;
+
+import androidx.annotation.NonNull;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -17,12 +29,14 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Locale;
 
-public class FaceScanner implements Camera.PreviewCallback {
+public class FaceScanner implements Camera.PreviewCallback{
     private Camera mCamera;
     private static final String TAG = FaceScanner.class.getSimpleName();
     private SurfaceTexture mCameratexture;
-
+    public TextToSpeech tts;
+    private Handler mHandler;
     private int count = 0;
 
     // 후면 카메라 개방
@@ -44,7 +58,21 @@ public class FaceScanner implements Camera.PreviewCallback {
         return cam;
     }
 
+    @SuppressLint("HandlerLeak")
     void preparescanner() {
+        tts = new TextToSpeech(MainActivity.mContext, new TextToSpeech.OnInitListener() {
+            @Override
+            public void onInit(int status) {
+                if (status == TextToSpeech.SUCCESS) {
+                    int result = tts.setLanguage(Locale.US);
+                    if (result == TextToSpeech.LANG_MISSING_DATA || result == TextToSpeech.LANG_NOT_SUPPORTED) {
+                        Log.e(TAG, "not supported language");
+                    } else {
+                        //speakJust("");
+                    }
+                }
+            }
+        });
         if (mCamera == null) {
             mCamera = opencamera();
         }
@@ -52,7 +80,30 @@ public class FaceScanner implements Camera.PreviewCallback {
             Log.e(TAG, "prepare scanner couldn't connect to camera!");
             return;
         }
-
+        mHandler = new Handler(){
+            @Override
+            public void handleMessage(@NonNull Message msg){
+                super.handleMessage(msg);
+                String str = (String)msg.obj;
+                int len=0;
+                String[] names = new String[10];
+                try {
+                    JSONArray arr = new JSONArray(str);
+                    for(int i=0; i<arr.length(); i++)
+                    {
+                        JSONObject temp = arr.getJSONObject(i);
+                        names[i]=temp.getString("name");
+                        len++;
+                    }
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                for(int i=0; i<len; i++){
+                    speakOut(names[i]);
+                    Log.e(TAG, names[i]);
+                }
+            }
+        };
         Camera.Parameters parameters = mCamera.getParameters();
         parameters.setPreviewSize(640, 480);
         parameters.setPreviewFpsRange(15000, 15000);
@@ -139,23 +190,18 @@ public class FaceScanner implements Camera.PreviewCallback {
             SaveBitmapToFileCache(bitmap, filepath, filename);
             File tempfile = new File(filepath+"/", filename);
             //send bitmap
-            FileUploadUtil.send2Server(tempfile);
+            FileUploadUtil.send2Server(mHandler, tempfile);
             count = 0;
-        }
-    }
-
-    protected void stopcamera() {
-        if (mCamera != null) {
-            mCamera.stopPreview();
-            mCamera.release();
-            mCamera = null;
-            Log.d(TAG, "releaseCamera -- done");
         }
     }
 
     public void endScanning() {
         if (mCamera != null) {
-            stopcamera();
+            mCameratexture.release();
+            mCamera.stopPreview();
+            mCamera.release();
+            mCamera = null;
+            Log.d(TAG, "releaseCamera -- done");
         }
     }
 
@@ -180,6 +226,21 @@ public class FaceScanner implements Camera.PreviewCallback {
                 out.close();
             } catch (IOException e) {
                 e.printStackTrace();
+            }
+        }
+    }
+
+    private void speakOut(String text) {
+        //todo Parse STRING
+        if (text == null || text.isEmpty()) {
+            return;
+        }
+        if (!tts.isSpeaking()) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                String utteranceId = this.hashCode() + "";
+                tts.speak(text, TextToSpeech.QUEUE_FLUSH, null, utteranceId);
+            } else {
+                tts.speak(text, TextToSpeech.QUEUE_FLUSH, null);
             }
         }
     }

@@ -1,5 +1,6 @@
 package com.example.graduateproject;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -8,19 +9,25 @@ import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
+import android.speech.tts.TextToSpeech;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
-public class MainActivity extends AppCompatActivity {
+import java.util.Locale;
 
-    //Context context = getApplicationContext();
+public class MainActivity extends AppCompatActivity{
     Button startbutton;
     TextView output;
     public static boolean servicecheck = false;
     public static Context mContext;
+    String TAG = "TextToSpeech";
 
     public void setText(String text) {
         output.setText(text);

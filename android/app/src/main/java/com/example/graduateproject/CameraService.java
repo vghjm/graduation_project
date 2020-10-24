@@ -44,10 +44,12 @@ public class CameraService extends Service {
     public void onDestroy() {
         super.onDestroy();
         // 얼굴 감지 종료
-//        if (mFaceScanner != null) {
-//            mFaceScanner.endScanning();
-//            mFaceScanner = null;
-//        }
+        Log.e("11", "1");
+        if (mFaceScanner != null) {
+            mFaceScanner.endScanning();
+            mFaceScanner = null;
+        }
+        Log.e("22", "1");
         if (orientationListener != null) {
             orientationListener.disable();
         }
