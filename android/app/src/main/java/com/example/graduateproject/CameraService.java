@@ -48,6 +48,7 @@ public class CameraService extends Service {
         if (mFaceScanner != null) {
             mFaceScanner.endScanning();
             mFaceScanner = null;
+            FileUploadUtil.deleteServerFiles();
         }
         if (orientationListener != null) {
             orientationListener.disable();
