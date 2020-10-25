@@ -47,7 +47,7 @@ router.post('/upload', upload.single('pngfile'), function (req, res) {
 });
 
 /* delete all */
-router.post('/delete', function (req, res) {
+router.delete('/delete', function (req, res) {
     function deleteFiles() {
         return new Promise((resolve, reject) => {
             var path = __dirname + "/../image/";
