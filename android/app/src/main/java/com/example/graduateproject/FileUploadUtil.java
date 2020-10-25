@@ -21,7 +21,7 @@ import okhttp3.RequestBody;
 import okhttp3.Response;
 
 public class FileUploadUtil {
-    private static String URL = "http://2dc3b1a9a387.ngrok.io/upload";
+    private static String URL = "http://qmoment.qmoment.tk:8080/upload";
     private static Handler mHandler;
 
     //handle message to detectionservice
@@ -55,7 +55,7 @@ public class FileUploadUtil {
                 try {
                     String str = response.body().string();
                     handleMessage(str);
-                    ((MainActivity) MainActivity.mContext).setText(str);
+                    //((MainActivity) MainActivity.mContext).setText(str);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }

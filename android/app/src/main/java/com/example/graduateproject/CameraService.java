@@ -3,10 +3,13 @@ package com.example.graduateproject;
 import android.app.Service;
 import android.content.Intent;
 import android.hardware.SensorManager;
+import android.os.Build;
 import android.os.IBinder;
 import android.util.Log;
 import android.view.OrientationEventListener;
 import android.widget.Toast;
+
+import androidx.annotation.RequiresApi;
 
 public class CameraService extends Service {
     FaceScanner mFaceScanner = new FaceScanner();
@@ -22,7 +25,6 @@ public class CameraService extends Service {
     public void onCreate() {
         super.onCreate();
         mFaceScanner.preparescanner();
-
         orientationListener = new OrientationEventListener(this,
                 SensorManager.SENSOR_DELAY_UI) {
             @Override
@@ -30,26 +32,23 @@ public class CameraService extends Service {
                 ori = orientation;
             }
         };
-
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        // 서비스가 호출될 때마다 실행
         orientationListener.enable();
         return super.onStartCommand(intent, flags, startId);
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.O)
     @Override
     public void onDestroy() {
         super.onDestroy();
         // 얼굴 감지 종료
-        Log.e("11", "1");
         if (mFaceScanner != null) {
             mFaceScanner.endScanning();
             mFaceScanner = null;
         }
-        Log.e("22", "1");
         if (orientationListener != null) {
             orientationListener.disable();
         }

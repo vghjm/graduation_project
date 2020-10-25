@@ -58,10 +58,12 @@ public class MainActivity extends AppCompatActivity{
                 if(!servicecheck)
                 {
                     servicecheck = true;
+                    startbutton.setBackground(getDrawable(R.drawable.pretty_circle));
                     startbutton.setText("SERVICE END");
                     startService(tmpIntent);
                 }else{
                     servicecheck = false;
+                    startbutton.setBackground(getDrawable(R.drawable.pretty_circle2));
                     startbutton.setText("SERVICE START");
                     stopService(tmpIntent);
                 }
