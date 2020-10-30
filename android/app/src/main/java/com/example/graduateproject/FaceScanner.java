@@ -17,6 +17,7 @@ import android.speech.tts.TextToSpeech;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -68,7 +69,7 @@ public class FaceScanner implements Camera.PreviewCallback{
                     if (result == TextToSpeech.LANG_MISSING_DATA || result == TextToSpeech.LANG_NOT_SUPPORTED) {
                         Log.e(TAG, "not supported language");
                     } else {
-                        //speakJust("");
+                        speakOut("Service start");
                     }
                 }
             }
@@ -87,20 +88,36 @@ public class FaceScanner implements Camera.PreviewCallback{
                 String str = (String)msg.obj;
                 int len=0;
                 String[] names = new String[10];
+                float[] prob = new float[10];
                 try {
                     JSONArray arr = new JSONArray(str);
                     for(int i=0; i<arr.length(); i++)
                     {
                         JSONObject temp = arr.getJSONObject(i);
                         names[i]=temp.getString("name");
+                        prob[i]=Float.parseFloat(temp.getString("prob"));
                         len++;
                     }
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
+
+                //big probility speaks out
+                float temp = 0;
+                String voice = "";
                 for(int i=0; i<len; i++){
-                    speakOut(names[i]);
-                    Log.e(TAG, names[i]);
+                    if(temp < prob[i])
+                    {
+                        temp = prob[i];
+                        voice = names[i];
+                    }
+                }
+                if(voice.equals(""))
+                {
+                    ((MainActivity) MainActivity.mContext).setText("nothing");
+                }else{
+                    ((MainActivity) MainActivity.mContext).setText(voice);
+                    speakOut(voice);
                 }
             }
         };
@@ -109,12 +126,10 @@ public class FaceScanner implements Camera.PreviewCallback{
         parameters.setPreviewFpsRange(15000, 15000);
         mCamera.setParameters(parameters);
         Log.e(TAG, "prepare end");
-
         makePreviewGo();
     }
 
     private boolean makePreviewGo() {
-
         mCameratexture = new SurfaceTexture(0);
         try {
             mCamera.setPreviewTexture(mCameratexture);
@@ -122,11 +137,9 @@ public class FaceScanner implements Camera.PreviewCallback{
             Log.e(TAG, "can't setPreviewTexture", e);
             return false;
         }
-
         mCamera.startPreview();
         mCamera.setPreviewCallback(this);
         Log.e(TAG, "makepreviewgo");
-
         return true;
     }
 
@@ -195,12 +208,22 @@ public class FaceScanner implements Camera.PreviewCallback{
         }
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.O)
     public void endScanning() {
         if (mCamera != null) {
+            mHandler = null;
             mCameratexture.release();
+            while(!mCameratexture.isReleased())
+            {
+                Log.e(TAG, "release waiting.....");
+                //wait
+            }
             mCamera.stopPreview();
+            mCamera.setPreviewCallback(null);
             mCamera.release();
             mCamera = null;
+            speakOut("service end");
+            tts = null;
             Log.d(TAG, "releaseCamera -- done");
         }
     }
@@ -230,12 +253,14 @@ public class FaceScanner implements Camera.PreviewCallback{
         }
     }
 
+
     private void speakOut(String text) {
         //todo Parse STRING
         if (text == null || text.isEmpty()) {
             return;
         }
-        if (!tts.isSpeaking()) {
+        if (tts != null && !tts.isSpeaking()) {
+            tts.setSpeechRate((float) 0.7); // 재생속도
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                 String utteranceId = this.hashCode() + "";
                 tts.speak(text, TextToSpeech.QUEUE_FLUSH, null, utteranceId);

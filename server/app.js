@@ -14,6 +14,9 @@ var app = express();
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'pug');
 
+//set Port
+//app.set('port', process.env.PORT || 9000);
+
 app.use(favicon());
 app.use(logger('dev'));
 app.use(bodyParser.json());

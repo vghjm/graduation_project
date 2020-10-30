@@ -21,7 +21,8 @@ import okhttp3.RequestBody;
 import okhttp3.Response;
 
 public class FileUploadUtil {
-    private static String URL = "http://2dc3b1a9a387.ngrok.io/upload";
+    private static String URL1 = "http://qmoment.qmoment.tk:8080/upload";
+    private static String URL2 = "http://qmoment.qmoment.tk:8080/delete";
     private static Handler mHandler;
 
     //handle message to detectionservice
@@ -31,15 +32,32 @@ public class FileUploadUtil {
         mHandler.sendMessage(msg);
     }
 
+    public static void deleteServerFiles(){
+        RequestBody requestBody = RequestBody.create(null, new byte[0]);
+        Request request = new Request.Builder()
+                .url(URL2) // Server URL 은 본인 IP를 입력
+                .delete(requestBody)
+                .build();
+        OkHttpClient client = new OkHttpClient();
+        client.newCall(request).enqueue(new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                e.printStackTrace();
+            }
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+            }
+        });
+    }
+
     public static void send2Server(Handler handler ,final File file) {
-        Log.e("11", file.getName());
         mHandler = handler;
         RequestBody requestBody = new MultipartBody.Builder()
                 .setType(MultipartBody.FORM)
                 .addFormDataPart("pngfile", file.getName(), RequestBody.create(MediaType.parse("image/png"), file))
                 .build();
         Request request = new Request.Builder()
-                .url(URL) // Server URL 은 본인 IP를 입력
+                .url(URL1) // Server URL 은 본인 IP를 입력
                 .post(requestBody)
                 .build();
         //Log.e("11",requestBody+"");
@@ -55,7 +73,7 @@ public class FileUploadUtil {
                 try {
                     String str = response.body().string();
                     handleMessage(str);
-                    ((MainActivity) MainActivity.mContext).setText(str);
+                    //((MainActivity) MainActivity.mContext).setText(str);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
