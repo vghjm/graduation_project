@@ -10,7 +10,7 @@
     "cookie-parser": "^1.4.5",
     "darknet": "^3.0.0",
     "debug": "^4.3.0",
-    "express": "^4.17.1",
+    "express": "^4.17.3",
     "morgan": "^1.10.0",
     "multer": "^1.4.2",
     "pug": "^3.0.0",
